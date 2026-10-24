@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FOR TRISHA ❤️ — WITH LOVE, MANTHAN</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-cream: #fffdfa;
+      --soft-pink: #ffd7e2;
+      --lavender: #f3e8ff;
+      --rose-red: #e11d48;
+      --rose-deep: #9f1239;
+      --rose-light: #ffe4e6;
+      --text-main: #3b2832;
+      --text-muted: #6e5866;
+      --glass-surface: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 16px 40px rgba(225, 29, 72, 0.12), 0 4px 16px rgba(0, 0, 0, 0.04);
+      --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(145deg, #fff1f2 0%, #fdf4f5 30%, #faf5ff 70%, #ffe4e6 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Canvas for Rose Petals & Hearts */
+    #ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Atmosphere overlays for specific pages */
+    .atmosphere-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .atmosphere-sunset {
+      background: radial-gradient(circle at 50% 20%, rgba(254, 215, 170, 0.35) 0%, rgba(244, 114, 182, 0.15) 50%, transparent 80%);
+    }
+
+    .atmosphere-rain {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.08) 0%, rgba(148, 163, 184, 0.12) 100%);
+    }
+
+    /* Fixed Header Controls */
+    .top-bar {
+      position: fixed;
+      top: 18px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .top-bar > * {
+      pointer-events: auto;
+    }
+
+    .progress-pill {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--rose-deep);
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .music-btn {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 6px 20px rgba(225, 29, 72, 0.15);
+      transition: var(--transition-smooth);
+    }
+
+    .music-btn:hover {
+      transform: scale(1.08);
+      background: #ffffff;
+    }
+
+    .music-btn.active {
+      box-shadow: 0 0 20px rgba(225, 29, 72, 0.5);
+      animation: musicPulse 2s infinite;
+    }
+
+    @keyframes musicPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    /* Main Container */
+    .app-viewport {
+      position: relative;
+      z-index: 10;
+      max-width: 680px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 85px 22px 100px;
+    }
+
+    /* Page Flow */
+    .page-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .page-section.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Glassmorphism Card */
+    .glass-box {
+      background: var(--glass-surface);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 30px;
+      padding: 42px 32px;
+      box-shadow: var(--glass-shadow);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .glass-box {
+        padding: 34px 22px;
+        border-radius: 26px;
+      }
+    }
+
+    /* Typography */
+    h1, h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--rose-deep);
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      line-height: 1.35;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-size: 2.15rem; }
+    h2 { font-size: 1.85rem; }
+
+    .handwritten-intro {
+      font-family: 'Caveat', cursive;
+      font-size: 2.2rem;
+      color: var(--rose-red);
+      margin-bottom: 14px;
+    }
+
+    .message-text {
+      font-size: 1.06rem;
+      line-height: 1.85;
+      color: var(--text-main);
+      font-weight: 400;
+      margin-bottom: 30px;
+      white-space: pre-line;
+      text-align: left;
+    }
+
+    .message-text.center {
+      text-align: center;
+    }
+
+    /* Glowing Romantic Buttons */
+    .btn-glow {
+      background: linear-gradient(135deg, #f43f5e 0%, #fb7185 50%, #fda4af 100%);
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 1.05rem;
+      padding: 16px 36px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 28px rgba(244, 63, 94, 0.35);
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .btn-glow::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-glow:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 34px rgba(244, 63, 94, 0.45);
+    }
+
+    .btn-glow:hover::after {
+      opacity: 1;
+    }
+
+    .btn-glow:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* PAGE 1: Glowing Heart */
+    .glow-heart-container {
+      margin: 15px auto 30px;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pulsing-glow-heart {
+      width: 80px;
+      height: 80px;
+      fill: #f43f5e;
+      filter: drop-shadow(0 0 20px rgba(244, 63, 94, 0.65));
+      animation: bigHeartPulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes bigHeartPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.6)); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 30px rgba(244, 63, 94, 0.9)); }
+    }
+
+    /* PAGE 2 & 5: Cute SVG Teddy Bear */
+    .bear-illustration {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 20px;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.06));
+      animation: gentleSway 4s ease-in-out infinite;
+    }
+
+    @keyframes gentleSway {
+      0%, 100% { transform: rotate(-2deg) translateY(0); }
+      50% { transform: rotate(2deg) translateY(-8px); }
+    }
+
+    /* PAGE 4: Metro silhouette illustration */
+    .metro-scene {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #1e1b2e 0%, #312e4a 100%);
+    }
+
+    .metro-track {
+      position: absolute;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #64748b;
+    }
+
+    .metro-train {
+      position: absolute;
+      bottom: 15px;
+      left: -180px;
+      width: 160px;
+      height: 36px;
+      background: #e2e8f0;
+      border-radius: 8px 18px 4px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      animation: trainGlide 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .metro-window {
+      width: 24px;
+      height: 14px;
+      background: #fbbf24;
+      border-radius: 3px;
+      box-shadow: 0 0 8px #fbbf24;
+    }
+
+    @keyframes trainGlide {
+      0% { left: -180px; }
+      40%, 60% { left: calc(50% - 80px); }
+      100% { left: 100%; }
+    }
+
+    /* PAGE 5: Broken to whole heart animation */
+    .heart-morph-box {
+      width: 120px;
+      height: 100px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .broken-piece-left, .broken-piece-right {
+      transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .is-healing .broken-piece-left {
+      transform: translate(0, 0) rotate(0deg) !important;
+    }
+    .is-healing .broken-piece-right {
+      transform: translate(0, 0) rotate(0deg) !important;
+    }
+
+    /* PAGE 6: 5 Promise Cards */
+    .promises-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 24px 0 28px;
+      text-align: left;
+    }
+
+    .promise-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(244, 63, 94, 0.22);
+      border-radius: 20px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 6px 18px rgba(225, 29, 72, 0.06);
+      transition: var(--transition-smooth);
+    }
+
+    .promise-card:hover {
+      transform: translateX(6px);
+      border-color: var(--rose-red);
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(225, 29, 72, 0.12);
+    }
+
+    .promise-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--rose-light);
+      color: var(--rose-deep);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .promise-card-text {
+      font-size: 0.98rem;
+      line-height: 1.55;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* PAGE 7: Animated Envelope and Letter */
+    .envelope-stage {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      margin: 25px auto 40px;
+      cursor: pointer;
+    }
+
+    .envelope-shell {
+      position: relative;
+      width: 100%;
+      height: 230px;
+      background: #f43f5e;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 20px 45px rgba(244, 63, 94, 0.28);
+      perspective: 1000px;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      border-left: 220px solid transparent;
+      border-right: 220px solid transparent;
+      border-top: 130px solid #fb7185;
+      transform-origin: top;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 5;
+    }
+
+    @media (max-width: 480px) {
+      .envelope-shell { height: 210px; }
+      .envelope-flap {
+        border-left-width: 165px;
+        border-right-width: 165px;
+        border-top-width: 110px;
+      }
+    }
+
+    .envelope-shell.open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    .letter-sheet {
+      position: absolute;
+      top: 15px;
+      left: 14px;
+      right: 14px;
+      bottom: 15px;
+      background: #fffdfa;
+      border-radius: 14px;
+      padding: 24px 22px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      z-index: 3;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .envelope-shell.open .letter-sheet {
+      position: relative;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: auto;
+      transform: translateY(-80px);
+      z-index: 10;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .letter-body {
+      font-size: 0.98rem;
+      line-height: 1.85;
+      color: #3b2832;
+    }
+
+    .letter-body strong {
+      color: var(--rose-deep);
+    }
+
+    .signature-block {
+      font-family: 'Caveat', cursive;
+      font-size: 1.7rem;
+      color: var(--rose-deep);
+      text-align: right;
+      margin-top: 25px;
+    }
+
+    .tap-hint-text {
+      margin-top: 14px;
+      font-size: 0.88rem;
+      color: var(--rose-deep);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Final Interactive Question Buttons */
+    .question-box {
+      margin-top: 40px;
+      padding-top: 35px;
+      border-top: 1px dashed rgba(244, 63, 94, 0.35);
+      text-align: center;
+    }
+
+    .choices-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      max-width: 380px;
+      margin: 22px auto 0;
+    }
+
+    .choice-btn {
+      background: #ffffff;
+      border: 1.5px solid rgba(244, 63, 94, 0.35);
+      border-radius: 50px;
+      padding: 15px 22px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--rose-deep);
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .choice-btn:hover {
+      border-color: var(--rose-red);
+      background: var(--rose-light);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(244, 63, 94, 0.15);
+    }
+
+    .choice-btn.primary-choice {
+      background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+      color: #ffffff;
+      border: none;
+    }
+
+    .choice-btn.primary-choice:hover {
+      box-shadow: 0 12px 30px rgba(244, 63, 94, 0.4);
+    }
+
+    /* Response Modal */
+    .modal-veil {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 10, 20, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 2000;
+    }
+
+    .modal-veil.visible {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 38px 28px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 65px rgba(225, 29, 72, 0.3);
+      animation: popUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popUp {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Hidden Secret Heart Button */
+    .secret-heart-btn {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 6px 22px rgba(244, 63, 94, 0.3);
+      z-index: 99;
+      transition: var(--transition-smooth);
+      animation: heartGlow 2.5s infinite;
+    }
+
+    @keyframes heartGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); transform: scale(1); }
+      50% { box-shadow: 0 0 22px rgba(244, 63, 94, 0.7); transform: scale(1.08); }
+    }
+
+    /* Floating Heart Cursor Sparkle */
+    .cursor-heart {
+      position: fixed;
+      pointer-events: none;
+      font-size: 14px;
+      z-index: 99999;
+      animation: flyOut 1.2s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+    }
+
+    @keyframes flyOut {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Falling Petals & Ambient Hearts Canvas -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- Atmosphere Overlays -->
+  <div class="atmosphere-layer atmosphere-sunset" id="sunsetLayer"></div>
+  <div class="atmosphere-layer atmosphere-rain" id="rainLayer"></div>
+
+  <!-- Header Bar -->
+  <header class="top-bar">
+    <div class="progress-pill" id="pageIndicator">Page 1 of 7</div>
+    <button class="music-btn" id="audioToggle" title="Play / Pause Romantic Piano">
+      🎵
+    </button>
+  </header>
+
+  <!-- Secret Heart Button (Bottom Right) -->
+  <button class="secret-heart-btn" id="secretHeart" title="A small note for you">
+    💖
+  </button>
+
+  <!-- Viewport -->
+  <main class="app-viewport">
+
+    <!-- ==================== PAGE 1: HEY TRISHA ==================== -->
+    <section class="page-section active" id="page-1">
+      <div class="glass-box">
+        <div class="glow-heart-container">
+          <svg class="pulsing-glow-heart" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+
+        <h1 class="handwritten-intro">Hey Trisha… ❤️</h1>
+
+        <div class="message-text center">
+          Ye koi normal website nahi hai…
+
+          Ye mere dil ki kuch baatein hain jo main tumse kehna chahta hoon.
+
+          Mujhe pata hai maine tumhe bahut hurt kiya hai.
+
+          Bas ek baar meri baat padh lena, Trisha. 🥺❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(2)">
+          <span>Manthan Ki Baat Sunogi?</span>
+          <span>💌</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: CHICHOLI WALI BAAT ==================== -->
+    <section class="page-section" id="page-2">
+      <div class="glass-box">
+        <!-- Cute SVG Teddy Bear with Sunset Accent -->
+        <svg class="bear-illustration" viewBox="0 0 160 160">
+          <circle cx="50" cy="46" r="18" fill="#d4a373"/>
+          <circle cx="50" cy="46" r="10" fill="#ffd7e2"/>
+          <circle cx="110" cy="46" r="18" fill="#d4a373"/>
+          <circle cx="110" cy="46" r="10" fill="#ffd7e2"/>
+          <ellipse cx="80" cy="108" rx="42" ry="38" fill="#d4a373"/>
+          <circle cx="80" cy="72" r="34" fill="#deb489"/>
+          <ellipse cx="80" cy="79" rx="14" ry="11" fill="#fff1e6"/>
+          <polygon points="76,75 84,75 80,81" fill="#4a2e18"/>
+          <!-- Eyes -->
+          <circle cx="68" cy="68" r="4" fill="#3b2832"/>
+          <circle cx="66" cy="66" r="1.3" fill="#ffffff"/>
+          <circle cx="92" cy="68" r="4" fill="#3b2832"/>
+          <circle cx="90" cy="66" r="1.3" fill="#ffffff"/>
+          <!-- Holding a rose -->
+          <path d="M80 102 C70 85, 48 98, 65 118 L80 132 L95 118 C112 98, 90 85, 80 102 Z" fill="#e11d48"/>
+          <circle cx="56" cy="104" r="10" fill="#d4a373"/>
+          <circle cx="104" cy="104" r="10" fill="#d4a373"/>
+        </svg>
+
+        <h2>Jab Main Chicholi Gaya Tha…</h2>
+
+        <div class="message-text">
+          Trisha, jab main Chicholi gaya tha, tab maine achanak tumse baat karna band kar diya tha.
+
+          Maine ek baar bhi nahi socha ki tum kitni pareshan ho sakti ho.
+
+          Mujhe tumhe batana chahiye tha ki main busy hoon.
+
+          Lekin maine tumhe bina samjhaye akela feel karwaya.
+
+          Tumhara gussa hona samajh aata hai.
+
+          I’m really sorry, Trisha. ❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(3)">
+          <span>Ek Aur Baat Kehni Hai</span>
+          <span>🥺</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: HOSPITAL WALA DIN ==================== -->
+    <section class="page-section" id="page-3">
+      <div class="glass-box">
+        <div style="font-size: 2.8rem; margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">
+          🌧️🏥💔
+        </div>
+
+        <h2>Jab Tum Hospital Mein Thi…</h2>
+
+        <div class="message-text">
+          Trisha…
+
+          Tumne mujhe bataya tha ki tum din bhar hospital mein thi.
+
+          Aur maine tumse keh diya tha…
+          <span style="display:block; padding: 12px 16px; margin: 12px 0; background: rgba(254, 226, 226, 0.7); border-left: 4px solid #ef4444; border-radius: 8px; font-weight: 500; color: #991b1b;">“Mari toh nahi thi na?”</span>
+          Mujhe aisa bilkul nahi kehna chahiye tha.
+
+          Tumhe us waqt meri care, support aur pyaar ki zarurat thi.
+
+          Mujhe tumse poochna chahiye tha ki tum theek ho ya nahi.
+
+          Lekin maine tumhari feelings hurt kar di.
+
+          Main apne un shabdon ke liye dil se maafi maangta hoon.
+
+          I’m sorry, Trisha. 🥺❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(4)">
+          <span>Woh Din Bhi Yaad Hai…</span>
+          <span>💔</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: JAB HUM MILE THE ==================== -->
+    <section class="page-section" id="page-4">
+      <div class="glass-box">
+        <!-- Metro Train Silhouette Scene -->
+        <div class="metro-scene">
+          <div class="metro-train">
+            <div class="metro-window"></div>
+            <div class="metro-window"></div>
+            <div class="metro-window"></div>
+          </div>
+          <div class="metro-track"></div>
+        </div>
+
+        <h2>Woh Din Jo Itna Bura Nahi Hona Chahiye Tha…</h2>
+
+        <div class="message-text">
+          Trisha…
+
+          Tum mujhse milne aayi thi.
+
+          Tumne mere liye apna time nikala.
+
+          Lekin maine tumhe ek ghanta wait karwaya.
+
+          Uske baad tumhare saath achha time spend karne ke bajaye main tumhe metro station le gaya.
+
+          Mujhe tumhare time aur feelings ki respect karni chahiye thi.
+
+          Phir humare beech jhagda hua.
+
+          Baat itni badh gayi ki hum dono ek doosre ko samajh nahi paaye.
+
+          Main tumhe raste par chhodkar chala gaya.
+
+          Mujhe us situation ko aur maturity se handle karna chahiye tha.
+
+          Main apni galti accept karta hoon.
+
+          Lekin main ye bhi chahta hoon ki humare beech kabhi maar-peet, phone chheenna ya ek doosre ko hurt karna na ho.
+
+          Hum dono respect aur safety deserve karte hain.
+
+          I’m sorry for my mistakes, Trisha. ❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(5)">
+          <span>Mere Dil Ki Baat Suno</span>
+          <span>💌</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 5: MERI SABSE BADI GALTI ==================== -->
+    <section class="page-section" id="page-5">
+      <div class="glass-box">
+        <!-- Animated Broken Heart Healing into One -->
+        <div class="heart-morph-box" id="heartMorphContainer">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <!-- Left piece -->
+            <path class="broken-piece-left" d="M50,85 L20,55 C8,43 8,24 23,14 C35,6 46,14 50,25 Z" fill="#e11d48" style="transform-origin: 50% 50%; transform: translate(-8px, -4px) rotate(-12deg);"/>
+            <!-- Right piece -->
+            <path class="broken-piece-right" d="M50,85 L80,55 C92,43 92,24 77,14 C65,6 54,14 50,25 Z" fill="#f43f5e" style="transform-origin: 50% 50%; transform: translate(8px, 4px) rotate(12deg);"/>
+          </svg>
+        </div>
+
+        <h2>Maine Tumhe Pyaar Mehsoos Nahi Karwaya…</h2>
+
+        <div class="message-text">
+          Trisha…
+
+          Main tumse pyaar karta hoon.
+
+          Lekin shayad main tumhe apna pyaar sahi tarah se dikha nahi paaya.
+
+          Tumhe meri baaton se zyada mere actions ki zarurat thi.
+
+          Aur mere actions ne kai baar tumhe hurt kiya.
+
+          Jab tumne kaha ki mera pyaar sirf dikhawa hai, tab mujhe samajh aaya ki maine tumhara trust kitna hurt kiya hai.
+
+          Main tumhe sirf promises nahi dena chahta.
+
+          Main apne behaviour mein sach mein change laana chahta hoon.
+
+          Tum mere liye important ho, Trisha.
+
+          I’m really sorry. ❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(6)">
+          <span>Ek Vaada Karna Hai</span>
+          <span>🤞</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 6: MY PROMISE ==================== -->
+    <section class="page-section" id="page-6">
+      <div class="glass-box">
+        <h2>Trisha, Mere Kuch Vaade… ❤️</h2>
+
+        <div class="promises-list">
+          <div class="promise-card">
+            <div class="promise-num">1</div>
+            <div class="promise-card-text">Main bina bataye achanak baat karna band nahi karunga.</div>
+          </div>
+          <div class="promise-card">
+            <div class="promise-num">2</div>
+            <div class="promise-card-text">Main tumhari health aur feelings ko seriously lunga.</div>
+          </div>
+          <div class="promise-card">
+            <div class="promise-num">3</div>
+            <div class="promise-card-text">Main tumhare time ki respect karunga.</div>
+          </div>
+          <div class="promise-card">
+            <div class="promise-num">4</div>
+            <div class="promise-card-text">Main gusse mein hurtful baatein kehne ke bajaye shaanti se baat karne ki koshish karunga.</div>
+          </div>
+          <div class="promise-card">
+            <div class="promise-num">5</div>
+            <div class="promise-card-text">Main sirf I Love You nahi bolunga, balki apne actions se care aur respect dikhane ki koshish karunga.</div>
+          </div>
+        </div>
+
+        <div class="message-text" style="font-style: italic; color: var(--rose-deep); text-align: center;">
+          Trisha, mujhe pata hai trust ek din mein wapas nahi aata.<br>
+          Main tumhe force nahi karunga.<br>
+          Main apni galtiyon se seekhkar ek better person banna chahta hoon.<br>
+          Chahe tumhe kitna bhi waqt chahiye, main tumhare decision ki respect karunga. ❤️
+        </div>
+
+        <button class="btn-glow" onclick="navigateTo(7)">
+          <span>Mera Aakhri Letter</span>
+          <span>💌</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 7: MY LAST LETTER ==================== -->
+    <section class="page-section" id="page-7">
+      <div class="glass-box">
+        
+        <!-- Large Interactive Envelope -->
+        <div class="envelope-stage" onclick="toggleEnvelope()">
+          <div class="envelope-shell" id="loveEnvelope">
+            <div class="envelope-flap"></div>
+            
+            <div class="letter-sheet" id="letterPaper">
+              <h2 style="font-family: 'Caveat', cursive; font-size: 2.3rem; margin-bottom: 14px; text-align: left;">Dear Trisha… ❤️</h2>
+              <div class="letter-body">
+                Trisha,<br><br>
+                Pata nahi tum ye sab padhkar kya sochogi…<br><br>
+                Lekin aaj main tumse bina kisi bahane ke apni galtiyon ke liye maafi maangna chahta hoon.<br><br>
+                Chicholi mein tumse achanak baat band karna, hospital wali baat par tumhe hurt karna, tumhe wait karwana aur jab tum milne aayi thi tab tumhare saath achha behaviour na karna…<br><br>
+                <strong>Ye sab meri galtiyan thi.</strong><br><br>
+                Mujhe tumhari feelings samajhni chahiye thi.<br><br>
+                Tumne mujhse pyaar aur care expect ki thi, aur kai baar main woh nahi de paaya.<br><br>
+                Main tumhe khona nahi chahta, Trisha.<br><br>
+                Lekin main ye bhi samajhta hoon ki sirf mere chahne se sab theek nahi ho sakta.<br><br>
+                Tumhara trust dobara jeetne ke liye mujhe apne actions badalne honge.<br><br>
+                Main tumse turant maaf karne ko nahi keh raha.<br><br>
+                Bas chahta hoon ki tum jaano ki mujhe apni galtiyon ka ehsaas hai.<br><br>
+                Agar kabhi tum shaanti se baat karna chaho, main tumhari baat sunne ke liye taiyar hoon.<br><br>
+                Aur agar tumhe waqt ya distance chahiye, toh main uski respect karunga.<br><br>
+                Tum mere liye bahut special ho.<br><br>
+                I am truly sorry, Trisha.<br><br>
+                <strong>I Love You. ❤️</strong>
+              </div>
+              <div class="signature-block">
+                — Tumhara Manthan ❤️
+              </div>
+            </div>
+          </div>
+
+          <div class="tap-hint-text">
+            <span>✨ Tap the envelope to read / fold letter ✨</span>
+          </div>
+        </div>
+
+        <!-- Final Interactive Question Section -->
+        <div class="question-box">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">🥺❤️</div>
+          <h2 style="font-size: 1.65rem;">Trisha, Kya Hum Ek Baar Shaanti Se Baat Kar Sakte Hain?</h2>
+
+          <div class="choices-stack">
+            <!-- Button 1 -->
+            <button class="choice-btn primary-choice" onclick="handleDecision('talk')">
+              <span>❤️ Haan, Baat Karte Hain</span>
+            </button>
+            <!-- Button 2 -->
+            <button class="choice-btn" onclick="handleDecision('time')">
+              <span>🌸 Mujhe Thoda Waqt Chahiye</span>
+            </button>
+            <!-- Button 3 -->
+            <button class="choice-btn" onclick="handleDecision('distance')">
+              <span>🤍 Main Aage Nahi Badhna Chahti</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Decision Response Modal -->
+  <div class="modal-veil" id="decisionModal">
+    <div class="modal-card">
+      <div id="modalIcon" style="font-size: 3.2rem; margin-bottom: 12px;"></div>
+      <h3 id="modalHeading" class="handwritten-intro" style="font-size: 2.1rem; margin-bottom: 10px;"></h3>
+      <p id="modalBody" style="font-size: 1.05rem; line-height: 1.7; color: #3b2832; margin-bottom: 24px;"></p>
+      <button class="btn-glow" onclick="closeModal()">
+        <span>Theek Hai ❤️</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Secret Heart Modal -->
+  <div class="modal-veil" id="secretNoteModal">
+    <div class="modal-card">
+      <div style="font-size: 3.2rem; margin-bottom: 12px;">💖✨</div>
+      <h3 class="handwritten-intro" style="font-size: 2.2rem; margin-bottom: 12px; color: #e11d48;">
+        Trisha, Tum Mere Liye Bahut Special Ho. ❤️
+      </h3>
+      <p style="font-size: 1.02rem; line-height: 1.75; color: #4a2e38; margin-bottom: 24px;">
+        Chahe halaat koi bhi hon, mere dil mein tumhare liye hamesha beintehaa izzat aur pyaar rahega.
+      </p>
+      <button class="btn-glow" onclick="closeSecretModal()">
+        <span>Hamesha 🌸</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================
+       1. Soft Piano Synthesizer (Web Audio API)
+       Built-in romantic acoustic piano progression:
+       Fmaj9 -> Dm9 -> Bbmaj7 -> Csus4 -> C
+       Safe, offline, zero dead links, high fidelity.
+    ======================================================== */
+    let audioContext = null;
+    let isMusicPlaying = false;
+    let sequenceTimer = null;
+
+    // Harmonic chord voicing in gentle Hertz frequencies
+    const pianoProgression = [
+      [174.61, 261.63, 329.63, 349.23, 392.00], // Fmaj9
+      [146.83, 220.00, 261.63, 329.63, 349.23], // Dm9
+      [116.54, 174.61, 233.08, 293.66, 349.23], // Bbmaj7
+      [130.81, 196.00, 261.63, 349.23, 392.00], // Csus4
+      [130.81, 196.00, 246.94, 329.63, 392.00]  // Cmaj
+    ];
+    let chordPointer = 0;
+
+    function initAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }
+
+    function strikePianoKey(frequency, timeOffset, duration = 3.2) {
+      if (!audioContext || !isMusicPlaying) return;
+
+      const osc = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      // Soft triangle + sine hybrid via lowpass filter for warm piano feel
+      const filter = audioContext.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1100, audioContext.currentTime + timeOffset);
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(frequency, audioContext.currentTime + timeOffset);
+
+      // Acoustic envelope: quick gentle attack, prolonged resonant decay
+      const startTime = audioContext.currentTime + timeOffset;
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.045, startTime + 0.08);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      osc.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    }
+
+    function startBackgroundPiano() {
+      initAudioContext();
+      isMusicPlaying = true;
+      document.getElementById('audioToggle').classList.add('active');
+
+      function playNextArpeggio() {
+        if (!isMusicPlaying) return;
+        const currentChord = pianoProgression[chordPointer];
+        
+        // Gentle arpeggio timing
+        currentChord.forEach((note, idx) => {
+          strikePianoKey(note, idx * 0.38, 3.4);
+        });
+
+        // Add soft high octave chime occasionally
+        if (chordPointer % 2 === 0) {
+          strikePianoKey(currentChord[2] * 2, 1.4, 2.2);
+        }
+
+        chordPointer = (chordPointer + 1) % pianoProgression.length;
+      }
+
+      playNextArpeggio();
+      sequenceTimer = setInterval(playNextArpeggio, 2900);
+    }
+
+    function stopBackgroundPiano() {
+      isMusicPlaying = false;
+      document.getElementById('audioToggle').classList.remove('active');
+      if (sequenceTimer) clearInterval(sequenceTimer);
+    }
+
+    document.getElementById('audioToggle').addEventListener('click', () => {
+      if (isMusicPlaying) {
+        stopBackgroundPiano();
+      } else {
+        startBackgroundPiano();
+      }
+    });
+
+    /* ========================================================
+       2. Page Navigation & Atmosphere Sync
+    ======================================================== */
+    let currentPage = 1;
+
+    function navigateTo(pageIndex) {
+      if (!isMusicPlaying) {
+        startBackgroundPiano();
+      }
+
+      const activeSection = document.querySelector('.page-section.active');
+      const targetSection = document.getElementById(`page-${pageIndex}`);
+
+      if (activeSection && targetSection) {
+        activeSection.classList.remove('active');
+        targetSection.classList.add('active');
+        currentPage = pageIndex;
+
+        // Update top indicator
+        document.getElementById('pageIndicator').innerText = `Page ${pageIndex} of 7`;
+
+        // Scroll gracefully to top of section
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Update atmosphere overlays
+        syncAtmosphere(pageIndex);
+
+        // Special actions
+        if (pageIndex === 5) {
+          setTimeout(() => {
+            document.getElementById('heartMorphContainer').classList.add('is-healing');
+          }, 350);
+        }
+        if (pageIndex === 7) {
+          triggerGentleConfetti();
+        }
+      }
+    }
+
+    function syncAtmosphere(page) {
+      const sunset = document.getElementById('sunsetLayer');
+      const rain = document.getElementById('rainLayer');
+
+      sunset.style.opacity = (page === 2) ? '1' : '0';
+      rain.style.opacity = (page === 3 || page === 4) ? '1' : '0';
+    }
+
+    /* ========================================================
+       3. Interactive Envelope & Letter (Page 7)
+    ======================================================== */
+    function toggleEnvelope() {
+      const env = document.getElementById('loveEnvelope');
+      env.classList.toggle('open');
+      if (env.classList.contains('open')) {
+        triggerGentleConfetti();
+      }
+    }
+
+    /* ========================================================
+       4. Decision Handling (Trisha’s 3 Options)
+    ======================================================== */
+    function handleDecision(choice) {
+      const modal = document.getElementById('decisionModal');
+      const icon = document.getElementById('modalIcon');
+      const heading = document.getElementById('modalHeading');
+      const body = document.getElementById('modalBody');
+
+      if (choice === 'talk') {
+        icon.innerHTML = '❤️✨';
+        heading.innerHTML = 'Thank You, Trisha';
+        body.innerHTML = 'Thank you, Trisha. Main tumhari baat dhyan se sununga. ❤️';
+        triggerCelebration();
+      } else if (choice === 'time') {
+        icon.innerHTML = '🌸🤍';
+        heading.innerHTML = 'Take All Your Time';
+        body.innerHTML = 'Main samajhta hoon, Trisha. Apna waqt lo. ❤️';
+      } else if (choice === 'distance') {
+        icon.innerHTML = '🤍🕊️';
+        heading.innerHTML = 'I Respect You Always';
+        body.innerHTML = 'Main tumhare decision ki respect karta hoon. Apna khayal rakhna. 🤍';
+      }
+
+      modal.classList.add('visible');
+    }
+
+    function closeModal() {
+      document.getElementById('decisionModal').classList.remove('visible');
+    }
+
+    /* ========================================================
+       5. Hidden Secret Heart Feature
+    ======================================================== */
+    document.getElementById('secretHeart').addEventListener('click', () => {
+      triggerGentleConfetti();
+      document.getElementById('secretNoteModal').classList.add('visible');
+    });
+
+    function closeSecretModal() {
+      document.getElementById('secretNoteModal').classList.remove('visible');
+    }
+
+    /* ========================================================
+       6. Falling Rose Petals & Floating Hearts Canvas
+    ======================================================== */
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const particleCount = 28;
+
+    class FloatingParticle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * -120;
+        this.size = Math.random() * 14 + 10;
+        this.speedY = Math.random() * 1.3 + 0.7;
+        this.speedX = Math.sin(Math.random() * Math.PI) * 0.9;
+        this.rotation = Math.random() * 360;
+        this.rotationSpeed = (Math.random() - 0.5) * 1.8;
+        this.opacity = Math.random() * 0.45 + 0.3;
+        this.isHeart = Math.random() > 0.45;
+      }
+
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.rotation += this.rotationSpeed;
+
+        if (this.y > height + 25) {
+          this.reset();
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate((this.rotation * Math.PI) / 180);
+        ctx.globalAlpha = this.opacity;
+
+        if (this.isHeart) {
+          ctx.fillStyle = '#ff6b8b';
+          ctx.font = `${this.size}px serif`;
+          ctx.fillText('❤️', 0, 0);
+        } else {
+          // Delicate rose petal
+          ctx.fillStyle = '#fb7185';
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.quadraticCurveTo(this.size * 0.6, -this.size * 0.6, this.size, 0);
+          ctx.quadraticCurveTo(this.size * 0.6, this.size * 0.6, 0, 0);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      const p = new FloatingParticle();
+      p.y = Math.random() * height;
+      particles.push(p);
+    }
+
+    function renderParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+
+    /* ========================================================
+       7. Interactive Sparkle Trail (Touches and Clicks)
+    ======================================================== */
+    let lastSparkleTime = 0;
+    function spawnSparkle(x, y) {
+      const now = performance.now();
+      if (now - lastSparkleTime < 50) return;
+      lastSparkleTime = now;
+
+      const heart = document.createElement('div');
+      heart.className = 'cursor-heart';
+      heart.innerText = ['💖', '🌸', '✨', '💕'][Math.floor(Math.random() * 4)];
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+
+      const dx = (Math.random() - 0.5) * 70;
+      const dy = -25 - Math.random() * 50;
+      heart.style.setProperty('--dx', `${dx}px`);
+      heart.style.setProperty('--dy', `${dy}px`);
+
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 1200);
+    }
+
+    window.addEventListener('mousemove', (e) => spawnSparkle(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        spawnSparkle(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    });
+
+    /* ========================================================
+       8. Confetti Utilities
+    ======================================================== */
+    function triggerGentleConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 30,
+          spread: 60,
+          origin: { y: 0.65 },
+          colors: ['#f43f5e', '#ffd7e2', '#e9d5ff']
+        });
+      }
+    }
+
+    function triggerCelebration() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 85,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#e11d48', '#fda4af', '#f43f5e', '#ffffff']
+        });
+      }
+    }
+  </script>
+</body>
+</html>
